@@ -1,0 +1,12 @@
+{
+    "highscore": 0,
+    "sound_enabled": true,
+    "fullscreen": false,
+    "stats": {
+        "games_played": 0,
+        "total_collectibles": 0,
+        "total_score": 0,
+        "max_combo": 0,
+        "game_near_misses": 0
+    }
+}
