@@ -11,7 +11,7 @@ A simple game built with Pygame where the player dodges falling obstacles and co
 *   Increasing difficulty (items fall faster as score increases).
 *   Persistent high-score tracking (`highscore.txt`).
 *   Main menu and game over screen.
-*   (Optional) Sound effects for collecting and getting hit.
+*   Sound effects for collecting and getting hit.
 
 ## Requirements
 
@@ -21,3 +21,9 @@ A simple game built with Pygame where the player dodges falling obstacles and co
 Install Pygame using pip:
 ```bash
 pip install -r requirements.txt
+```
+
+Run the game using:
+```python 
+python/python3 main.py
+```
