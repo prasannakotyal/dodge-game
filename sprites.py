@@ -18,7 +18,7 @@ class Player(pg.sprite.Sprite):
         self.original_image = self.image.copy()
         self.rect.midbottom = (PLAYER_START_POS[0], PLAYER_GROUND_Y)
         self.pos = vec(self.rect.centerx, self.rect.centery)
-        self.vel = vec(0, 0) # Only vertical velocity matters now for jump
+        self.vel = vec(0, 0)
         self.is_jumping = False
         self.on_ground = True
         self.flash_timer = 0.0
@@ -26,20 +26,38 @@ class Player(pg.sprite.Sprite):
         self.is_flashing = False
 
     def _draw_player_shape(self, color):
-        """Draws the player triangle onto self.image."""
-        self.image.fill((0,0,0,0)) # Clear with transparency
+        """Draws a more polished player shape."""
+        self.image.fill((0,0,0,0))  # Clear with transparency
+        
+        # Main body (rounded triangle)
         points = [
-            (self.rect.width // 2, 0),
-            (0, self.rect.height),
-            (self.rect.width, self.rect.height)
+            (self.rect.width // 2, 0),  # Top point
+            (0, self.rect.height),      # Bottom left
+            (self.rect.width, self.rect.height)  # Bottom right
         ]
-        outline_color = BLACK # Or choose another contrast color like YELLOW
-        line_thickness = 2     # How thick the outline is
-
-        # Draw the main filled polygon
-        pg.draw.polygon(self.image, color, points)
-        # Draw the outline polygon (last argument is line width)
-        pg.draw.polygon(self.image, outline_color, points, line_thickness)
+        
+        # Draw main shape with gradient
+        gradient_surface = pg.Surface((self.rect.width, self.rect.height), pg.SRCALPHA)
+        for y in range(self.rect.height):
+            alpha = int(255 * (1 - y / self.rect.height * 0.3))  # Fade to slightly transparent
+            pg.draw.line(gradient_surface, (*color, alpha), (0, y), (self.rect.width, y))
+        
+        # Draw the gradient shape
+        mask = pg.Surface((self.rect.width, self.rect.height), pg.SRCALPHA)
+        pg.draw.polygon(mask, (255, 255, 255, 255), points)
+        gradient_surface.blit(mask, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
+        self.image.blit(gradient_surface, (0, 0))
+        
+        # Draw outline with anti-aliasing
+        pg.draw.polygon(self.image, (*BLACK, 180), points, 2)
+        
+        # Add highlight
+        highlight_points = [
+            (self.rect.width // 2, 2),
+            (self.rect.width // 4, self.rect.height // 2),
+            (self.rect.width * 3 // 4, self.rect.height // 2)
+        ]
+        pg.draw.polygon(self.image, (*WHITE, 100), highlight_points)
 
     def jump(self):
         if self.on_ground:
@@ -120,26 +138,69 @@ class Item(pg.sprite.Sprite):
         if self.type == 'collectible':
             self.base_size = ITEM_SIZE_COLLECTIBLE
             self.image = pg.Surface((self.base_size, self.base_size), pg.SRCALPHA)
-            pg.draw.circle(self.image, GREEN, (self.base_size // 2, self.base_size // 2), self.base_size // 2)
+            
+            # Draw collectible with gradient and glow
+            center = self.base_size // 2
+            radius = self.base_size // 2 - 2
+            
+            # Outer glow
+            for r in range(radius + 4, radius - 1, -1):
+                alpha = int(100 * (1 - (r - radius) / 4))
+                pg.draw.circle(self.image, (*GREEN, alpha), (center, center), r)
+            
+            # Main circle with gradient
+            for r in range(radius, 0, -1):
+                alpha = int(255 * (1 - r / radius * 0.3))
+                pg.draw.circle(self.image, (*GREEN, alpha), (center, center), r)
+            
+            # Highlight
+            highlight_pos = (center - radius//3, center - radius//3)
+            pg.draw.circle(self.image, (*WHITE, 150), highlight_pos, radius//4)
+            
             self.original_image = self.image.copy()
+            
         elif self.type == 'obstacle':
             self.base_size = ITEM_SIZE_OBSTACLE
             self.image = pg.Surface((self.base_size, self.base_size), pg.SRCALPHA)
-            pg.draw.rect(self.image, RED, self.image.get_rect(), border_radius=3)
-        else: self.kill()
+            
+            # Draw obstacle with gradient and glow
+            rect = self.image.get_rect()
+            center = self.base_size // 2
+            
+            # Outer glow
+            for r in range(3, 0, -1):
+                alpha = int(100 * (1 - r / 3))
+                pg.draw.rect(self.image, (*RED, alpha), rect.inflate(r*2, r*2), border_radius=3)
+            
+            # Main shape with gradient
+            for y in range(self.base_size):
+                alpha = int(255 * (1 - y / self.base_size * 0.3))
+                pg.draw.line(self.image, (*RED, alpha), (0, y), (self.base_size, y))
+            
+            # Add highlight
+            highlight_rect = pg.Rect(0, 0, self.base_size//2, self.base_size//2)
+            highlight_rect.topleft = (self.base_size//4, self.base_size//4)
+            pg.draw.rect(self.image, (*WHITE, 100), highlight_rect, border_radius=2)
+            
+            # Outline
+            pg.draw.rect(self.image, (*BLACK, 180), rect, 2, border_radius=3)
+            
+        else:
+            self.kill()
 
         if self.image:
             self.rect = self.image.get_rect(center=(x, -self.base_size // 2))
             self.pos = vec(self.rect.center)
             self.vel = vec(0, 0)
-        else: self.kill()
+        else:
+            self.kill()
 
-    def update(self, dt, current_speed): # Simplified signature
+    def update(self, dt, current_speed):
         self.vel.y = current_speed
         self.pos.y += self.vel.y * dt * FPS
         self.rect.centery = round(self.pos.y)
 
-        # Animate collectibles
+        # Animate collectibles with improved pulsing
         if self.type == 'collectible' and self.original_image:
             scale_factor = 1.0 + math.sin(pg.time.get_ticks() * 0.001 * COLLECTIBLE_PULSE_SPEED + self.pulse_offset) * COLLECTIBLE_PULSE_AMOUNT
             new_size = max(1, int(self.base_size * scale_factor))
@@ -149,9 +210,11 @@ class Item(pg.sprite.Sprite):
                     scaled_image = pg.transform.scale(self.original_image, (new_size, new_size))
                     self.image = scaled_image
                     self.rect = self.image.get_rect(center=center)
-                except (pg.error, ValueError): pass
+                except (pg.error, ValueError):
+                    pass
 
-        if self.rect.top > SCREEN_HEIGHT + 50: self.kill()
+        if self.rect.top > SCREEN_HEIGHT + 50:
+            self.kill()
 
 # --- PowerUp Class REMOVED ---
 

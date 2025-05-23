@@ -79,86 +79,159 @@ def clear_popups():
 # ui.py
 # ... (imports and other functions like draw_text, popups) ...
 
-def draw_hud(surface, score, high_score, powerup_timer, powerup_type, assets): # Keep args for now, ignore last two
-    """Draws the minimalistic Heads Up Display."""
-    # Score Top Left
-    draw_text(surface, f"Score: {score}", 30, 15, 15, WHITE, assets.font_small, align="topleft")
-    # High Score Top Right
-    draw_text(surface, f"Best: {high_score}", 30, SCREEN_WIDTH - 15, 15, GRAY, assets.font_small, align="topright")
-    # --- Removed Powerup Timer Display ---
+def draw_hud(surface, score, high_score, powerup_timer, powerup_type, assets):
+    """Draws the professional Heads Up Display."""
+    # Create a semi-transparent background for the score
+    score_bg = pg.Surface((200, 40), pg.SRCALPHA)
+    score_bg.fill((0, 0, 0, 128))
+    surface.blit(score_bg, (10, 10))
+    
+    # Score with improved styling
+    draw_text(surface, f"SCORE: {score}", 28, 110, 30, WHITE, assets.font_small, align="center")
+    
+    # High Score with improved styling
+    high_score_bg = pg.Surface((200, 40), pg.SRCALPHA)
+    high_score_bg.fill((0, 0, 0, 128))
+    surface.blit(high_score_bg, (SCREEN_WIDTH - 210, 10))
+    draw_text(surface, f"BEST: {high_score}", 28, SCREEN_WIDTH - 110, 30, ACCENT, assets.font_small, align="center")
 
 # ... (rest of ui.py, ensuring draw_main_menu, draw_game_over, draw_pause etc are the simplified versions) ...
 # Make sure draw_main_menu/draw_game_over/draw_pause don't reference removed features/states.
 
 def draw_main_menu(surface, highscore, assets):
-    """Draws the minimalistic Main Menu."""
-    assets.draw_background(surface) # Draw gradient
-    title_font = assets.font_normal if assets.font_normal else pg.font.SysFont(None, 70)
-    option_font = assets.font_small if assets.font_small else pg.font.SysFont(None, 40)
-    info_font = assets.font_tiny if assets.font_tiny else pg.font.SysFont(None, 25)
+    """Draws the professional Main Menu."""
+    assets.draw_background(surface)
+    
+    # Title with shadow effect
+    title_font = assets.font_normal if assets.font_normal else pg.font.SysFont(None, 80)
+    shadow_offset = 3
+    draw_text(surface, TITLE, 80, SCREEN_WIDTH // 2 + shadow_offset, SCREEN_HEIGHT * 0.2 + shadow_offset, BLACK, title_font, align="center")
+    draw_text(surface, TITLE, 80, SCREEN_WIDTH // 2, SCREEN_HEIGHT * 0.2, ACCENT, title_font, align="center")
 
-    # Game Title
-    draw_text(surface, TITLE, 70, SCREEN_WIDTH // 2, SCREEN_HEIGHT * 0.25, YELLOW, title_font, align="center")
+    # High Score with improved styling
+    score_font = assets.font_small if assets.font_small else pg.font.SysFont(None, 40)
+    draw_text(surface, f"High Score: {highscore}", 40, SCREEN_WIDTH // 2, SCREEN_HEIGHT * 0.35, WHITE, score_font, align="center")
 
-    # High Score
-    draw_text(surface, f"High Score: {highscore}", 35, SCREEN_WIDTH // 2, SCREEN_HEIGHT * 0.45, WHITE, option_font, align="center")
+    # Menu options with improved styling and spacing
+    menu_y_start = SCREEN_HEIGHT * 0.5  # Moved down from 0.6
+    line_height = 80  # Increased from 60
+    option_font = assets.font_small if assets.font_small else pg.font.SysFont(None, 36)
+    
+    # Create semi-transparent backgrounds for menu options
+    option_bg = pg.Surface((300, 45), pg.SRCALPHA)
+    option_bg.fill((0, 0, 0, 128))
+    
+    # Start Game
+    surface.blit(option_bg, (SCREEN_WIDTH // 2 - 150, menu_y_start - 22))
+    draw_text(surface, "START GAME", 36, SCREEN_WIDTH // 2, menu_y_start, WHITE, option_font, align="center")
+    draw_text(surface, "[ ENTER ]", 24, SCREEN_WIDTH // 2, menu_y_start + 25, GRAY, assets.font_tiny, align="center")
+    
+    # Fullscreen Toggle
+    surface.blit(option_bg, (SCREEN_WIDTH // 2 - 150, menu_y_start + line_height - 22))
+    draw_text(surface, "TOGGLE FULLSCREEN", 36, SCREEN_WIDTH // 2, menu_y_start + line_height, WHITE, option_font, align="center")
+    draw_text(surface, f"[ {pg.key.name(FULLSCREEN_TOGGLE_KEY).upper()} ]", 24, SCREEN_WIDTH // 2, menu_y_start + line_height + 25, GRAY, assets.font_tiny, align="center")
+    
+    # Quit
+    surface.blit(option_bg, (SCREEN_WIDTH // 2 - 150, menu_y_start + line_height * 2 - 22))
+    draw_text(surface, "QUIT GAME", 36, SCREEN_WIDTH // 2, menu_y_start + line_height * 2, WHITE, option_font, align="center")
+    draw_text(surface, "[ Q ]", 24, SCREEN_WIDTH // 2, menu_y_start + line_height * 2 + 25, GRAY, assets.font_tiny, align="center")
 
-    # Options
-    menu_y_start = SCREEN_HEIGHT * 0.60
-    line_height = 55
-    draw_text(surface, "[ ENTER ] Start Game", 35, SCREEN_WIDTH // 2, menu_y_start, GRAY, option_font, align="center")
-    draw_text(surface, f"[ {pg.key.name(FULLSCREEN_TOGGLE_KEY).upper()} ] Toggle Fullscreen", 30, SCREEN_WIDTH // 2, menu_y_start + line_height, GRAY, info_font, align="center")
-    draw_text(surface, "[ Q ] Quit Game", 35, SCREEN_WIDTH // 2, menu_y_start + line_height * 2, GRAY, option_font, align="center")
-
-    # Basic Controls Info
-    controls_text = "Controls: LEFT/RIGHT Arrows | UP/SPACE = Jump | P = Pause"
-    draw_text(surface, controls_text, 24, SCREEN_WIDTH // 2, SCREEN_HEIGHT - 40, LIGHT_GRAY, info_font, align="center")
+    # Controls with improved styling
+    controls_bg = pg.Surface((600, 40), pg.SRCALPHA)
+    controls_bg.fill((0, 0, 0, 128))
+    surface.blit(controls_bg, (SCREEN_WIDTH // 2 - 300, SCREEN_HEIGHT - 50))
+    controls_text = "CONTROLS: LEFT/RIGHT = Move | UP/SPACE = Jump | P = Pause"
+    draw_text(surface, controls_text, 24, SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30, LIGHT_GRAY, assets.font_tiny, align="center")
 
 def draw_game_over(surface, score, highscore, new_highscore, assets):
-    """Draws the minimalistic Game Over screen."""
-    assets.draw_background(surface) # Keep background consistent or make it darker
+    """Draws the professional Game Over screen."""
+    assets.draw_background(surface)
     overlay = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pg.SRCALPHA)
-    overlay.fill((0, 0, 0, 180)) # Dark overlay
+    overlay.fill((0, 0, 0, 200))
+    surface.blit(overlay, (0,0))
+
+    title_font = assets.font_normal if assets.font_normal else pg.font.SysFont(None, 80)
+    score_font = assets.font_small if assets.font_small else pg.font.SysFont(None, 50)
+    info_font = assets.font_small if assets.font_small else pg.font.SysFont(None, 36)
+
+    # Game Over Text with shadow
+    shadow_offset = 3
+    draw_text(surface, "GAME OVER", 80, SCREEN_WIDTH // 2 + shadow_offset, SCREEN_HEIGHT * 0.25 + shadow_offset, BLACK, title_font, align="center")
+    draw_text(surface, "GAME OVER", 80, SCREEN_WIDTH // 2, SCREEN_HEIGHT * 0.25, RED, title_font, align="center")
+
+    # Score Display with improved styling
+    y_start = SCREEN_HEIGHT * 0.45
+    if new_highscore:
+        new_hs_bg = pg.Surface((300, 45), pg.SRCALPHA)
+        new_hs_bg.fill((0, 0, 0, 128))
+        surface.blit(new_hs_bg, (SCREEN_WIDTH // 2 - 150, y_start - 45))
+        draw_text(surface, "NEW HIGH SCORE!", 36, SCREEN_WIDTH // 2, y_start - 22, GOLD, info_font, align="center")
+    
+    score_bg = pg.Surface((300, 60), pg.SRCALPHA)
+    score_bg.fill((0, 0, 0, 128))
+    surface.blit(score_bg, (SCREEN_WIDTH // 2 - 150, y_start))
+    draw_text(surface, f"SCORE: {score}", 50, SCREEN_WIDTH // 2, y_start + 30, WHITE, score_font, align="center")
+    
+    best_bg = pg.Surface((300, 45), pg.SRCALPHA)
+    best_bg.fill((0, 0, 0, 128))
+    surface.blit(best_bg, (SCREEN_WIDTH // 2 - 150, y_start + 70))
+    draw_text(surface, f"BEST: {highscore}", 36, SCREEN_WIDTH // 2, y_start + 92, ACCENT, info_font, align="center")
+
+    # Options with improved styling
+    option_y = SCREEN_HEIGHT * 0.75
+    option_spacing = 200
+    option_bg = pg.Surface((150, 45), pg.SRCALPHA)
+    option_bg.fill((0, 0, 0, 128))
+    
+    # Replay
+    surface.blit(option_bg, (SCREEN_WIDTH // 2 - option_spacing - 75, option_y - 22))
+    draw_text(surface, "REPLAY", 36, SCREEN_WIDTH // 2 - option_spacing, option_y, WHITE, info_font, align="center")
+    draw_text(surface, "[ R ]", 24, SCREEN_WIDTH // 2 - option_spacing, option_y + 25, GRAY, assets.font_tiny, align="center")
+    
+    # Menu
+    surface.blit(option_bg, (SCREEN_WIDTH // 2 - 75, option_y - 22))
+    draw_text(surface, "MENU", 36, SCREEN_WIDTH // 2, option_y, WHITE, info_font, align="center")
+    draw_text(surface, "[ M ]", 24, SCREEN_WIDTH // 2, option_y + 25, GRAY, assets.font_tiny, align="center")
+    
+    # Quit
+    surface.blit(option_bg, (SCREEN_WIDTH // 2 + option_spacing - 75, option_y - 22))
+    draw_text(surface, "QUIT", 36, SCREEN_WIDTH // 2 + option_spacing, option_y, WHITE, info_font, align="center")
+    draw_text(surface, "[ Q ]", 24, SCREEN_WIDTH // 2 + option_spacing, option_y + 25, GRAY, assets.font_tiny, align="center")
+
+def draw_pause_screen(surface, assets):
+    """Draws the professional Pause screen."""
+    overlay = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pg.SRCALPHA)
+    overlay.fill((0, 0, 0, 220))
     surface.blit(overlay, (0,0))
 
     title_font = assets.font_normal if assets.font_normal else pg.font.SysFont(None, 70)
-    score_font = assets.font_small if assets.font_small else pg.font.SysFont(None, 45)
-    info_font = assets.font_small if assets.font_small else pg.font.SysFont(None, 35)
+    info_font = assets.font_small if assets.font_small else pg.font.SysFont(None, 36)
 
-    # Game Over Text
-    draw_text(surface, "Game Over", 70, SCREEN_WIDTH // 2, SCREEN_HEIGHT * 0.25, RED, title_font, align="center")
+    # Paused Text with shadow
+    shadow_offset = 3
+    draw_text(surface, "PAUSED", 70, SCREEN_WIDTH // 2 + shadow_offset, SCREEN_HEIGHT * 0.3 + shadow_offset, BLACK, title_font, align="center")
+    draw_text(surface, "PAUSED", 70, SCREEN_WIDTH // 2, SCREEN_HEIGHT * 0.3, ACCENT, title_font, align="center")
 
-    # Score Display
-    y_start = SCREEN_HEIGHT * 0.45
-    if new_highscore:
-         draw_text(surface, "New High Score!", 35, SCREEN_WIDTH // 2, y_start - 40, GOLD, info_font, align="center")
-    draw_text(surface, f"Score: {score}", 45, SCREEN_WIDTH // 2, y_start, WHITE, score_font, align="center")
-    draw_text(surface, f"Best: {highscore}", 35, SCREEN_WIDTH // 2, y_start + 50, YELLOW, info_font, align="center")
-
-    # Options
-    option_y = SCREEN_HEIGHT * 0.75
-    option_spacing = 150
-    draw_text(surface, "[ R ] Replay", 35, SCREEN_WIDTH // 2 - option_spacing, option_y, GRAY, info_font, align="center")
-    draw_text(surface, "[ M ] Menu", 35, SCREEN_WIDTH // 2 , option_y, GRAY, info_font, align="center")
-    draw_text(surface, "[ Q ] Quit", 35, SCREEN_WIDTH // 2 + option_spacing, option_y, GRAY, info_font, align="center")
-
-
-def draw_pause_screen(surface, assets):
-    """Draws the minimalistic Pause screen."""
-    overlay = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pg.SRCALPHA)
-    overlay.fill((0, 0, 0, 200)) # Darker overlay for pause
-    surface.blit(overlay, (0,0))
-
-    title_font = assets.font_normal if assets.font_normal else pg.font.SysFont(None, 60)
-    info_font = assets.font_small if assets.font_small else pg.font.SysFont(None, 35)
-
-    draw_text(surface, "Paused", 60, SCREEN_WIDTH // 2, SCREEN_HEIGHT * 0.3, YELLOW, title_font, align="center")
-
+    # Options with improved styling
     option_y = SCREEN_HEIGHT * 0.55
-    line_height = 50
-    draw_text(surface, "[ P ] Resume", 35, SCREEN_WIDTH // 2, option_y, WHITE, info_font, align="center")
-    draw_text(surface, "[ M ] Main Menu", 35, SCREEN_WIDTH // 2, option_y + line_height, WHITE, info_font, align="center")
-    draw_text(surface, "[ Q ] Quit Game", 35, SCREEN_WIDTH // 2, option_y + line_height * 2, WHITE, info_font, align="center")
+    line_height = 60
+    option_bg = pg.Surface((300, 45), pg.SRCALPHA)
+    option_bg.fill((0, 0, 0, 128))
+    
+    # Resume
+    surface.blit(option_bg, (SCREEN_WIDTH // 2 - 150, option_y - 22))
+    draw_text(surface, "RESUME", 36, SCREEN_WIDTH // 2, option_y, WHITE, info_font, align="center")
+    draw_text(surface, "[ P ]", 24, SCREEN_WIDTH // 2, option_y + 25, GRAY, assets.font_tiny, align="center")
+    
+    # Main Menu
+    surface.blit(option_bg, (SCREEN_WIDTH // 2 - 150, option_y + line_height - 22))
+    draw_text(surface, "MAIN MENU", 36, SCREEN_WIDTH // 2, option_y + line_height, WHITE, info_font, align="center")
+    draw_text(surface, "[ M ]", 24, SCREEN_WIDTH // 2, option_y + line_height + 25, GRAY, assets.font_tiny, align="center")
+    
+    # Quit
+    surface.blit(option_bg, (SCREEN_WIDTH // 2 - 150, option_y + line_height * 2 - 22))
+    draw_text(surface, "QUIT GAME", 36, SCREEN_WIDTH // 2, option_y + line_height * 2, WHITE, info_font, align="center")
+    draw_text(surface, "[ Q ]", 24, SCREEN_WIDTH // 2, option_y + line_height * 2 + 25, GRAY, assets.font_tiny, align="center")
 
 # --- Removed draw_tutorial ---
 # --- Removed draw_achievements_screen ---
